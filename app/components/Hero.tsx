@@ -4,28 +4,139 @@ import { motion } from 'framer-motion';
 import { TypeAnimation } from 'react-type-animation';
 import { FaEnvelope, FaGithub, FaLinkedin, FaArrowRight } from 'react-icons/fa';
 import Image from 'next/image';
+import { useEffect, useRef, useState } from 'react';
+
+interface Node {
+    x: number;
+    y: number;
+    vx: number;
+    vy: number;
+}
 
 export default function Hero() {
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+    const nodesRef = useRef<Node[]>([]);
+    const [isMounted, setIsMounted] = useState(false);
+    const [particles] = useState(() =>
+        Array.from({ length: 15 }, (_, i) => ({
+            left: (i * 7 + 13) % 100,
+            top: (i * 11 + 25) % 100,
+            duration: 5 + (i % 5),
+            delay: i % 5,
+        }))
+    );
+
+    useEffect(() => {
+        setIsMounted(true);
+
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        // Set canvas size
+        const resizeCanvas = () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        };
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // Initialize nodes
+        const nodeCount = 50;
+        nodesRef.current = Array.from({ length: nodeCount }, () => ({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            vx: (Math.random() - 0.5) * 0.5,
+            vy: (Math.random() - 0.5) * 0.5,
+        }));
+
+        // Animation loop
+        const animate = () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Update and draw nodes
+            nodesRef.current.forEach((node, i) => {
+                // Move nodes
+                node.x += node.vx;
+                node.y += node.vy;
+
+                // Bounce off edges
+                if (node.x < 0 || node.x > canvas.width) node.vx *= -1;
+                if (node.y < 0 || node.y > canvas.height) node.vy *= -1;
+
+                // Draw node
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, 3, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(99, 102, 241, 0.6)';
+                ctx.fill();
+
+                // Draw connections to nearby nodes
+                nodesRef.current.forEach((otherNode, j) => {
+                    if (i === j) return;
+                    const dx = node.x - otherNode.x;
+                    const dy = node.y - otherNode.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < 150) {
+                        ctx.beginPath();
+                        ctx.moveTo(node.x, node.y);
+                        ctx.lineTo(otherNode.x, otherNode.y);
+                        ctx.strokeStyle = `rgba(99, 102, 241, ${0.3 * (1 - distance / 150)})`;
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+                    }
+                });
+
+                // Draw connection to mouse
+                const dxMouse = node.x - mousePos.x;
+                const dyMouse = node.y - mousePos.y;
+                const distanceToMouse = Math.sqrt(dxMouse * dxMouse + dyMouse * dyMouse);
+
+                if (distanceToMouse < 200) {
+                    ctx.beginPath();
+                    ctx.moveTo(node.x, node.y);
+                    ctx.lineTo(mousePos.x, mousePos.y);
+                    ctx.strokeStyle = `rgba(168, 85, 247, ${0.6 * (1 - distanceToMouse / 200)})`;
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+
+                    // Draw glow at mouse
+                    ctx.beginPath();
+                    ctx.arc(mousePos.x, mousePos.y, 5, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(168, 85, 247, 0.8)';
+                    ctx.fill();
+                }
+            });
+
+            requestAnimationFrame(animate);
+        };
+
+        animate();
+
+        return () => {
+            window.removeEventListener('resize', resizeCanvas);
+        };
+    }, [mousePos]);
+
+    const handleMouseMove = (e: React.MouseEvent) => {
+        setMousePos({ x: e.clientX, y: e.clientY });
+    };
+
     return (
-        <section id="home" className="min-h-screen flex items-center justify-center relative overflow-hidden pt-32 pb-20 px-6">
-            {/* 3D Animated Background Grid */}
-            <div className="absolute inset-0 opacity-20">
-                <motion.div
-                    className="absolute inset-0"
-                    style={{
-                        backgroundImage: 'linear-gradient(rgba(99, 102, 241, 0.3) 2px, transparent 2px), linear-gradient(90deg, rgba(99, 102, 241, 0.3) 2px, transparent 2px)',
-                        backgroundSize: '100px 100px',
-                    }}
-                    animate={{
-                        backgroundPosition: ['0px 0px', '100px 100px'],
-                    }}
-                    transition={{
-                        duration: 20,
-                        repeat: Infinity,
-                        ease: 'linear',
-                    }}
-                />
-            </div>
+        <section
+            id="home"
+            className="min-h-screen flex items-center justify-center relative overflow-hidden pt-32 pb-20 px-6"
+            onMouseMove={handleMouseMove}
+        >
+            {/* Interactive Wire Canvas */}
+            <canvas
+                ref={canvasRef}
+                className="absolute inset-0 pointer-events-none"
+                style={{ opacity: 0.4 }}
+            />
 
             {/* Floating 3D Geometric Shapes */}
             <motion.div
@@ -89,13 +200,13 @@ export default function Hero() {
             />
 
             {/* Floating Particles */}
-            {[...Array(15)].map((_, i) => (
+            {isMounted && particles.map((particle, i) => (
                 <motion.div
                     key={i}
                     className="absolute w-2 h-2 bg-indigo-500/40 rounded-full"
                     style={{
-                        left: `${Math.random() * 100}%`,
-                        top: `${Math.random() * 100}%`,
+                        left: `${particle.left}%`,
+                        top: `${particle.top}%`,
                     }}
                     animate={{
                         y: [0, -100, 0],
@@ -103,9 +214,9 @@ export default function Hero() {
                         scale: [1, 1.5, 1],
                     }}
                     transition={{
-                        duration: 5 + Math.random() * 5,
+                        duration: particle.duration,
                         repeat: Infinity,
-                        delay: Math.random() * 5,
+                        delay: particle.delay,
                         ease: 'easeInOut',
                     }}
                 />

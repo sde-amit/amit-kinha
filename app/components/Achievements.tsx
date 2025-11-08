@@ -178,7 +178,8 @@ export default function Achievements() {
                                         className="flex-shrink-0"
                                     >
                                         <motion.div
-                                            className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${achievement.color} flex items-center justify-center shadow-lg relative`}
+                                            className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${achievement.color} flex items-center justify-center relative`}
+                                            style={{ boxShadow: "0 10px 20px rgba(99, 102, 241, 0.3)" }}
                                             animate={{
                                                 boxShadow: [
                                                     "0 10px 20px rgba(99, 102, 241, 0.3)",
