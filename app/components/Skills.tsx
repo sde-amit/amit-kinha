@@ -165,6 +165,17 @@ export default function Skills() {
                 >
                     <h2 className="section-title gradient-text mb-4">Skills & Expertise</h2>
                     <p className="text-gray-400 text-lg">Technologies I work with</p>
+                    {isMounted && (
+                        <motion.p
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 1, duration: 0.5 }}
+                            className="text-sm text-indigo-400/70 mt-3 flex items-center justify-center gap-2"
+                        >
+                            <span className="inline-block animate-pulse">✨</span>
+                            Drag & drop to reorder skills within each category
+                        </motion.p>
+                    )}
                 </motion.div>
 
                 <div className="grid md:grid-cols-2 gap-6">

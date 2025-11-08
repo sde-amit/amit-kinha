@@ -244,6 +244,17 @@ export default function Projects() {
                 >
                     <h2 className="section-title gradient-text mb-4">Featured Projects</h2>
                     <p className="text-gray-400 text-lg">Real-world applications I've built</p>
+                    {isMounted && (
+                        <motion.p
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 1, duration: 0.5 }}
+                            className="text-sm text-indigo-400/70 mt-3 flex items-center justify-center gap-2"
+                        >
+                            <span className="inline-block animate-pulse">✨</span>
+                            Drag & drop to reorder projects • Hover for 3D effect
+                        </motion.p>
+                    )}
                 </motion.div>
 
                 {isMounted ? (
