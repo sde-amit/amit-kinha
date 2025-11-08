@@ -20,7 +20,7 @@ const experiences = [
         color: 'from-green-500 to-emerald-500',
     },
     {
-        company: 'RKM Tech Research',
+        company: 'RKM Tech Research And Development',
         position: 'Full Stack Developer',
         period: 'February 2023 - November 2023',
         description: 'Built hospital management systems, eCommerce platforms, and gaming dashboards with backend APIs.',
