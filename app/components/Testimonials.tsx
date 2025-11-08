@@ -71,7 +71,7 @@ export default function Testimonials() {
     const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.1 });
 
     return (
-        <section id="testimonials" className="py-24 px-6 relative overflow-hidden">
+        <section id="testimonials" className="py-12 px-6 relative overflow-hidden">
             <div className="max-w-6xl mx-auto relative z-10">
                 <motion.div
                     ref={ref}

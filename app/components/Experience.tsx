@@ -32,7 +32,7 @@ export default function Experience() {
     const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.1 });
 
     return (
-        <section id="experience" className="py-24 px-6 relative overflow-hidden">
+        <section id="experience" className="py-12 px-6 relative overflow-hidden">
             <div className="max-w-5xl mx-auto relative z-10">
                 <motion.div
                     ref={ref}

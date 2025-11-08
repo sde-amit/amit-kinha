@@ -2,8 +2,10 @@
 
 import Navigation from '@/app/components/Navigation';
 import Hero from '@/app/components/Hero';
+import SkillsSlider from '@/app/components/SkillsSlider';
 import Experience from '@/app/components/Experience';
 import Skills from '@/app/components/Skills';
+import MotivationalSlider from '@/app/components/MotivationalSlider';
 import Projects from '@/app/components/Projects';
 import Education from '@/app/components/Education';
 import Achievements from '@/app/components/Achievements';
@@ -17,10 +19,13 @@ export default function Home() {
       <div className="relative z-10">
         <Navigation />
         <Hero />
+        <SkillsSlider />
         <Experience />
         <Skills />
+        <MotivationalSlider />
         <Projects />
         <Education />
+        <SkillsSlider />
         <Achievements />
         <Testimonials />
         <Contact />

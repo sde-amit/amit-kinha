@@ -16,6 +16,15 @@ export default function Navigation() {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
+    // Close mobile menu when clicking outside
+    useEffect(() => {
+        if (isMobileMenuOpen) {
+            const handleClickOutside = () => setIsMobileMenuOpen(false);
+            document.addEventListener('click', handleClickOutside);
+            return () => document.removeEventListener('click', handleClickOutside);
+        }
+    }, [isMobileMenuOpen]);
+
     const navItems = [
         { name: 'Home', href: '#home' },
         { name: 'Experience', href: '#experience' },
@@ -24,6 +33,17 @@ export default function Navigation() {
         { name: 'Education', href: '#education' },
         { name: 'Contact', href: '#contact' },
     ];
+
+    const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+        e.preventDefault();
+        setIsMobileMenuOpen(false);
+        setTimeout(() => {
+            const element = document.querySelector(href);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+            }
+        }, 600);
+    };
 
     return (
         <motion.nav
@@ -74,7 +94,10 @@ export default function Navigation() {
 
                     <motion.button
                         whileTap={{ scale: 0.9 }}
-                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setIsMobileMenuOpen(!isMobileMenuOpen);
+                        }}
                         className="md:hidden text-2xl text-white p-2 hover:text-indigo-400 transition-colors"
                     >
                         {isMobileMenuOpen ? <FaTimes /> : <FaBars />}
@@ -82,12 +105,28 @@ export default function Navigation() {
                 </div>
             </div>
 
-            <AnimatePresence>
+            <AnimatePresence mode="wait">
                 {isMobileMenuOpen && (
                     <motion.div
+                        key="mobile-menu"
                         initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
+                        animate={{
+                            opacity: 1,
+                            height: 'auto',
+                            transition: {
+                                height: { duration: 0.4, ease: 'easeInOut' },
+                                opacity: { duration: 0.3, ease: 'easeIn' }
+                            }
+                        }}
+                        exit={{
+                            opacity: 0,
+                            height: 0,
+                            transition: {
+                                height: { duration: 0.4, ease: 'easeInOut', delay: 0.2 },
+                                opacity: { duration: 0.2, ease: 'easeOut' }
+                            }
+                        }}
+                        onClick={(e) => e.stopPropagation()}
                         className="md:hidden glass-card mt-4 mx-4 overflow-hidden"
                     >
                         <div className="px-6 py-6 space-y-3">
@@ -95,10 +134,26 @@ export default function Navigation() {
                                 <motion.a
                                     key={item.name}
                                     href={item.href}
-                                    initial={{ opacity: 0, x: -20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: index * 0.1 }}
-                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    initial={{ opacity: 0, x: -30 }}
+                                    animate={{
+                                        opacity: 1,
+                                        x: 0,
+                                        transition: {
+                                            delay: 0.1 + index * 0.08,
+                                            duration: 0.4,
+                                            ease: 'easeOut'
+                                        }
+                                    }}
+                                    exit={{
+                                        opacity: 0,
+                                        x: -30,
+                                        transition: {
+                                            delay: (navItems.length - 1 - index) * 0.05,
+                                            duration: 0.3,
+                                            ease: 'easeIn'
+                                        }
+                                    }}
+                                    onClick={(e) => handleNavClick(e, item.href)}
                                     className="block text-gray-300 hover:text-white transition-colors duration-300 font-medium text-lg py-2 hover:pl-2"
                                 >
                                     {item.name}

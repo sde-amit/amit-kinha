@@ -109,7 +109,7 @@ export default function Projects() {
     const [selectedProject, setSelectedProject] = useState<typeof projects[0] | null>(null);
 
     return (
-        <section id="projects" className="py-24 px-6 relative overflow-hidden">
+        <section id="projects" className="py-12 px-6 relative overflow-hidden">
             <div className="max-w-7xl mx-auto relative z-10">
                 <motion.div
                     ref={ref}
