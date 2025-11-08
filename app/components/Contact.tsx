@@ -21,7 +21,7 @@ const contactInfo = [
         icon: FaMapMarkerAlt,
         label: 'Location',
         value: 'Vill. Badsa, Jhajjar, Haryana-124105',
-        link: null,
+        link: 'https://maps.app.goo.gl/C4H9oXFSuej1Qz5aA',
     },
     {
         icon: FaGlobe,
