@@ -33,13 +33,13 @@ const contactInfo = [
         icon: FaLinkedin,
         label: 'LinkedIn',
         value: 'Connect with me',
-        link: 'https://linkedin.com/in/amit-kinha-368a1b242',
+        link: 'https://linkedin.com/in/sde-amit',
     },
     {
         icon: FaGithub,
         label: 'GitHub',
         value: 'View my code',
-        link: 'https://github.com/Amit-1610',
+        link: 'https://github.com/sde-amit',
     },
 ];
 

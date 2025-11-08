@@ -98,8 +98,8 @@ export default function Hero() {
                             className="flex items-center gap-4 pt-4"
                         >
                             {[
-                                { icon: FaGithub, link: 'https://github.com/Amit-1610' },
-                                { icon: FaLinkedin, link: 'https://linkedin.com/in/amit-kinha-368a1b242' },
+                                { icon: FaGithub, link: 'https://github.com/sde-amit' },
+                                { icon: FaLinkedin, link: 'https://linkedin.com/in/sde-amit' },
                                 { icon: FaEnvelope, link: 'mailto:amitkinha2000@gmail.com' },
                             ].map((social, index) => (
                                 <motion.a
