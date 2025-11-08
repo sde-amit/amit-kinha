@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { TypeAnimation } from 'react-type-animation';
-import { FaEnvelope, FaPhone, FaMapMarkerAlt, FaGithub, FaLinkedin, FaArrowRight } from 'react-icons/fa';
+import { FaEnvelope, FaGithub, FaLinkedin, FaArrowRight } from 'react-icons/fa';
 import Image from 'next/image';
 
 export default function Hero() {
@@ -135,8 +135,9 @@ export default function Hero() {
                                     alt="Amit Kinha"
                                     width={600}
                                     height={600}
-                                    className="rounded-2xl object-cover w-full h-auto"
+                                    className="rounded-2xl object-cover w-full h-auto select-none pointer-events-none"
                                     priority
+                                    draggable={false}
                                 />
                             </div>
                         </div>
