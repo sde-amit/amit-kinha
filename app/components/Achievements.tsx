@@ -131,17 +131,25 @@ export default function Achievements() {
                     {achievements.map((achievement, index) => (
                         <motion.div
                             key={index}
-                            initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
-                            animate={inView ? { opacity: 1, x: 0 } : {}}
+                            initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50, rotateY: index % 2 === 0 ? -15 : 15 }}
+                            animate={inView ? { opacity: 1, x: 0, rotateY: 0 } : {}}
                             transition={{
                                 duration: 0.8,
                                 delay: index * 0.2,
                                 type: 'spring',
                                 stiffness: 100,
                             }}
+                            whileHover={{
+                                scale: 1.03,
+                                rotateY: index % 2 === 0 ? 3 : -3,
+                                rotateX: 2,
+                                z: 50,
+                                boxShadow: "0 30px 60px rgba(99, 102, 241, 0.4)"
+                            }}
+                            style={{ transformStyle: "preserve-3d" }}
                             className="group"
                         >
-                            <div className="relative p-8 rounded-3xl bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-sm border border-white/10 hover:border-white/20 transition-all duration-500 overflow-hidden">
+                            <div className="relative p-8 rounded-3xl bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-sm border border-white/10 hover:border-white/20 transition-all duration-500 overflow-hidden cursor-pointer">
                                 {/* Animated Background Gradient */}
                                 <motion.div
                                     className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-500"
@@ -150,28 +158,65 @@ export default function Achievements() {
                                     }}
                                 />
 
+                                {/* Animated shine effect */}
+                                <motion.div
+                                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
+                                    animate={{ x: ["-100%", "200%"] }}
+                                    transition={{ duration: 3, repeat: Infinity, repeatDelay: 2 }}
+                                />
+
                                 {/* Content */}
                                 <div className="relative z-10 flex items-start gap-6">
                                     {/* Icon */}
                                     <motion.div
-                                        whileHover={{ rotate: [0, -10, 10, -10, 0], scale: 1.1 }}
-                                        transition={{ duration: 0.5 }}
+                                        whileHover={{
+                                            rotate: [0, -10, 10, -10, 0],
+                                            scale: 1.2,
+                                            rotateY: 360
+                                        }}
+                                        transition={{ duration: 0.6 }}
                                         className="flex-shrink-0"
                                     >
-                                        <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${achievement.color} flex items-center justify-center shadow-lg`}>
+                                        <motion.div
+                                            className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${achievement.color} flex items-center justify-center shadow-lg relative`}
+                                            animate={{
+                                                boxShadow: [
+                                                    "0 10px 20px rgba(99, 102, 241, 0.3)",
+                                                    "0 15px 30px rgba(99, 102, 241, 0.5)",
+                                                    "0 10px 20px rgba(99, 102, 241, 0.3)"
+                                                ]
+                                            }}
+                                            transition={{ duration: 2, repeat: Infinity }}
+                                        >
                                             <achievement.icon className="text-3xl text-white" />
-                                        </div>
+
+                                            {/* Pulsing ring */}
+                                            <motion.div
+                                                className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${achievement.color} opacity-50`}
+                                                animate={{
+                                                    scale: [1, 1.3, 1],
+                                                    opacity: [0.5, 0, 0.5]
+                                                }}
+                                                transition={{ duration: 2, repeat: Infinity }}
+                                            />
+                                        </motion.div>
                                     </motion.div>
 
                                     {/* Text Content */}
                                     <div className="flex-1 min-w-0">
                                         <div className="mb-3">
-                                            <div className="gradient-text mb-1">
+                                            <motion.div
+                                                className="gradient-text mb-1"
+                                                whileHover={{ scale: 1.05 }}
+                                            >
                                                 <Counter value={achievement.value} suffix={achievement.suffix} />
-                                            </div>
-                                            <h3 className="text-xl font-bold text-white mb-1">
+                                            </motion.div>
+                                            <motion.h3
+                                                className="text-xl font-bold text-white mb-1"
+                                                whileHover={{ x: 5, color: "#a5b4fc" }}
+                                            >
                                                 {achievement.label}
-                                            </h3>
+                                            </motion.h3>
                                             <p className="text-sm text-gray-400">
                                                 {achievement.description}
                                             </p>
@@ -186,8 +231,8 @@ export default function Achievements() {
 
                                         {/* Percentage Label */}
                                         <motion.div
-                                            initial={{ opacity: 0 }}
-                                            animate={inView ? { opacity: 1 } : {}}
+                                            initial={{ opacity: 0, x: 20 }}
+                                            animate={inView ? { opacity: 1, x: 0 } : {}}
                                             transition={{ duration: 0.5, delay: index * 0.2 + 0.5 }}
                                             className="mt-2 text-right"
                                         >
@@ -198,8 +243,30 @@ export default function Achievements() {
                                     </div>
                                 </div>
 
-                                {/* Corner Accent */}
-                                <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${achievement.color} opacity-5 rounded-bl-full`} />
+                                {/* Corner Accent with animation */}
+                                <motion.div
+                                    className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${achievement.color} opacity-5 rounded-bl-full`}
+                                    whileHover={{ scale: 1.5, opacity: 0.1 }}
+                                    transition={{ duration: 0.3 }}
+                                />
+
+                                {/* Floating particles */}
+                                <motion.div
+                                    className={`absolute top-6 right-6 w-2 h-2 rounded-full bg-gradient-to-r ${achievement.color}`}
+                                    animate={{
+                                        y: [0, -15, 0],
+                                        opacity: [0.3, 1, 0.3]
+                                    }}
+                                    transition={{ duration: 2, repeat: Infinity, delay: index * 0.3 }}
+                                />
+                                <motion.div
+                                    className={`absolute bottom-8 right-12 w-3 h-3 rounded-full bg-gradient-to-r ${achievement.color}`}
+                                    animate={{
+                                        y: [0, -20, 0],
+                                        opacity: [0.2, 0.8, 0.2]
+                                    }}
+                                    transition={{ duration: 3, repeat: Infinity, delay: index * 0.3 + 0.5 }}
+                                />
                             </div>
                         </motion.div>
                     ))}

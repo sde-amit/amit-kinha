@@ -113,17 +113,46 @@ export default function Testimonials() {
                     {testimonials.map((testimonial, index) => (
                         <SwiperSlide key={index}>
                             <motion.div
-                                initial={{ opacity: 0, y: 30 }}
-                                animate={inView ? { opacity: 1, y: 0 } : {}}
-                                transition={{ duration: 0.6, delay: index * 0.1 }}
-                                className="glass-card p-8 relative h-full"
+                                initial={{ opacity: 0, y: 30, rotateY: -10 }}
+                                animate={inView ? { opacity: 1, y: 0, rotateY: 0 } : {}}
+                                transition={{ duration: 0.8, delay: index * 0.1, type: "spring" }}
+                                whileHover={{
+                                    scale: 1.03,
+                                    rotateY: 5,
+                                    z: 50,
+                                    boxShadow: "0 25px 50px rgba(99, 102, 241, 0.3)"
+                                }}
+                                style={{ transformStyle: "preserve-3d" }}
+                                className="glass-card p-8 relative h-full cursor-pointer overflow-hidden"
                             >
-                                <FaQuoteLeft className="text-4xl text-indigo-500 opacity-20 absolute top-6 right-6" />
+                                {/* Gradient background on hover */}
+                                <motion.div
+                                    className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-pink-500/10 opacity-0"
+                                    whileHover={{ opacity: 1 }}
+                                    transition={{ duration: 0.3 }}
+                                />
 
-                                <div className="flex items-center gap-4 mb-6">
-                                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white text-2xl font-bold flex-shrink-0">
+                                <motion.div
+                                    animate={{
+                                        rotate: [0, 5, 0],
+                                        scale: [1, 1.1, 1]
+                                    }}
+                                    transition={{ duration: 3, repeat: Infinity }}
+                                >
+                                    <FaQuoteLeft className="text-4xl text-indigo-500 opacity-20 absolute top-6 right-6" />
+                                </motion.div>
+
+                                <div className="flex items-center gap-4 mb-6 relative z-10">
+                                    <motion.div
+                                        className="w-16 h-16 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white text-2xl font-bold flex-shrink-0"
+                                        whileHover={{
+                                            rotate: 360,
+                                            scale: 1.1
+                                        }}
+                                        transition={{ duration: 0.6 }}
+                                    >
                                         {testimonial.name.charAt(0)}
-                                    </div>
+                                    </motion.div>
                                     <div>
                                         <h3 className="text-lg font-bold text-white">{testimonial.name}</h3>
                                         <p className="text-sm text-gray-400">{testimonial.role}</p>
@@ -131,13 +160,31 @@ export default function Testimonials() {
                                     </div>
                                 </div>
 
-                                <div className="flex gap-1 mb-4">
+                                <div className="flex gap-1 mb-4 relative z-10">
                                     {[...Array(testimonial.rating)].map((_, i) => (
-                                        <FaStar key={i} className="text-yellow-400" />
+                                        <motion.div
+                                            key={i}
+                                            initial={{ opacity: 0, scale: 0 }}
+                                            animate={inView ? { opacity: 1, scale: 1 } : {}}
+                                            transition={{ delay: index * 0.1 + i * 0.1 }}
+                                            whileHover={{
+                                                scale: 1.3,
+                                                rotate: 360
+                                            }}
+                                        >
+                                            <FaStar className="text-yellow-400" />
+                                        </motion.div>
                                     ))}
                                 </div>
 
-                                <p className="text-gray-300 leading-relaxed text-sm">{testimonial.text}</p>
+                                <p className="text-gray-300 leading-relaxed text-sm relative z-10">{testimonial.text}</p>
+
+                                {/* Corner decoration */}
+                                <motion.div
+                                    className="absolute bottom-0 right-0 w-20 h-20 bg-gradient-to-tl from-indigo-500/20 to-transparent rounded-tl-full"
+                                    whileHover={{ scale: 1.5 }}
+                                    transition={{ duration: 0.3 }}
+                                />
                             </motion.div>
                         </SwiperSlide>
                     ))}

@@ -8,6 +8,138 @@ import Image from 'next/image';
 export default function Hero() {
     return (
         <section id="home" className="min-h-screen flex items-center justify-center relative overflow-hidden pt-32 pb-20 px-6">
+            {/* 3D Animated Background Grid */}
+            <div className="absolute inset-0 opacity-20">
+                <motion.div
+                    className="absolute inset-0"
+                    style={{
+                        backgroundImage: 'linear-gradient(rgba(99, 102, 241, 0.3) 2px, transparent 2px), linear-gradient(90deg, rgba(99, 102, 241, 0.3) 2px, transparent 2px)',
+                        backgroundSize: '100px 100px',
+                    }}
+                    animate={{
+                        backgroundPosition: ['0px 0px', '100px 100px'],
+                    }}
+                    transition={{
+                        duration: 20,
+                        repeat: Infinity,
+                        ease: 'linear',
+                    }}
+                />
+            </div>
+
+            {/* Floating 3D Geometric Shapes */}
+            <motion.div
+                className="absolute top-20 left-10 w-20 h-20 border-2 border-indigo-500/30 rounded-lg"
+                animate={{
+                    y: [0, -30, 0],
+                    rotateZ: [0, 180, 360],
+                    rotateY: [0, 180, 360],
+                }}
+                transition={{
+                    duration: 8,
+                    repeat: Infinity,
+                    ease: 'easeInOut',
+                }}
+                style={{ transformStyle: 'preserve-3d' }}
+            />
+
+            <motion.div
+                className="absolute top-40 right-20 w-16 h-16 border-2 border-purple-500/30 rounded-full"
+                animate={{
+                    y: [0, 40, 0],
+                    scale: [1, 1.2, 1],
+                    rotateX: [0, 360, 0],
+                }}
+                transition={{
+                    duration: 10,
+                    repeat: Infinity,
+                    ease: 'easeInOut',
+                }}
+                style={{ transformStyle: 'preserve-3d' }}
+            />
+
+            <motion.div
+                className="absolute bottom-32 left-1/4 w-12 h-12 border-2 border-pink-500/30"
+                animate={{
+                    y: [0, -25, 0],
+                    rotateZ: [0, -180, -360],
+                    rotateX: [0, 180, 360],
+                }}
+                transition={{
+                    duration: 12,
+                    repeat: Infinity,
+                    ease: 'easeInOut',
+                }}
+                style={{ transformStyle: 'preserve-3d' }}
+            />
+
+            <motion.div
+                className="absolute top-1/3 right-1/4 w-24 h-24 border-2 border-cyan-500/30 rounded-xl"
+                animate={{
+                    y: [0, 35, 0],
+                    rotateY: [0, 360, 0],
+                    rotateZ: [0, 180, 360],
+                }}
+                transition={{
+                    duration: 15,
+                    repeat: Infinity,
+                    ease: 'easeInOut',
+                }}
+                style={{ transformStyle: 'preserve-3d' }}
+            />
+
+            {/* Floating Particles */}
+            {[...Array(15)].map((_, i) => (
+                <motion.div
+                    key={i}
+                    className="absolute w-2 h-2 bg-indigo-500/40 rounded-full"
+                    style={{
+                        left: `${Math.random() * 100}%`,
+                        top: `${Math.random() * 100}%`,
+                    }}
+                    animate={{
+                        y: [0, -100, 0],
+                        opacity: [0.2, 1, 0.2],
+                        scale: [1, 1.5, 1],
+                    }}
+                    transition={{
+                        duration: 5 + Math.random() * 5,
+                        repeat: Infinity,
+                        delay: Math.random() * 5,
+                        ease: 'easeInOut',
+                    }}
+                />
+            ))}
+
+            {/* Gradient Orbs with 3D effect */}
+            <motion.div
+                className="absolute top-1/4 left-1/3 w-64 h-64 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 rounded-full blur-3xl"
+                animate={{
+                    scale: [1, 1.3, 1],
+                    x: [0, 50, 0],
+                    y: [0, -50, 0],
+                }}
+                transition={{
+                    duration: 10,
+                    repeat: Infinity,
+                    ease: 'easeInOut',
+                }}
+            />
+
+            <motion.div
+                className="absolute bottom-1/4 right-1/3 w-72 h-72 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-full blur-3xl"
+                animate={{
+                    scale: [1, 1.4, 1],
+                    x: [0, -60, 0],
+                    y: [0, 60, 0],
+                }}
+                transition={{
+                    duration: 12,
+                    repeat: Infinity,
+                    ease: 'easeInOut',
+                }}
+            />
+
             <div className="max-w-7xl mx-auto relative z-10 w-full">
                 <div className="grid lg:grid-cols-2 gap-12 items-center">
                     <div className="space-y-8">
