@@ -20,7 +20,7 @@ const contactInfo = [
     {
         icon: FaMapMarkerAlt,
         label: 'Location',
-        value: 'Jhajjar, Haryana',
+        value: 'Vill. Badsa, Jhajjar, Haryana-124105',
         link: null,
     },
     {
