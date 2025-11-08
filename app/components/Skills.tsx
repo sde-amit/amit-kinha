@@ -5,6 +5,11 @@ import { useInView } from 'react-intersection-observer';
 import { FaHtml5, FaCss3Alt, FaJs, FaReact, FaNode, FaPython, FaAws, FaGitAlt, FaGithub } from 'react-icons/fa';
 import { SiTypescript, SiTailwindcss, SiBootstrap, SiExpress, SiMongodb, SiMysql, SiSocketdotio, SiNextdotjs, SiRedux, SiCloudinary, SiPostman } from 'react-icons/si';
 import { BiLogoVisualStudio } from "react-icons/bi";
+import { useState, useEffect } from 'react';
+import { DndContext, closestCenter, DragEndEvent, DragOverlay, DragStartEvent } from '@dnd-kit/core';
+import { SortableContext, useSortable, rectSortingStrategy } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { IconType } from 'react-icons';
 
 
 const skillCategories = [
@@ -57,8 +62,96 @@ const skillCategories = [
     },
 ];
 
+interface SkillItemProps {
+    skill: { name: string; icon: IconType; color: string };
+    id: string;
+    inView: boolean;
+    delay: number;
+}
+
+function SortableSkillItem({ skill, id, inView, delay }: SkillItemProps) {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging,
+    } = useSortable({ id });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.5 : 1,
+    };
+
+    return (
+        <motion.div
+            ref={setNodeRef}
+            style={style}
+            {...attributes}
+            {...listeners}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={inView ? { opacity: 1, scale: 1 } : {}}
+            transition={{ duration: 0.4, delay }}
+            whileHover={{ scale: 1.1, y: -5 }}
+            className={`flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-white/5 transition-all cursor-grab active:cursor-grabbing ${isDragging ? 'z-50 bg-white/10' : ''
+                }`}
+        >
+            <skill.icon className={`text-3xl ${skill.color}`} />
+            <span className="text-xs text-gray-300 font-medium text-center leading-tight">{skill.name}</span>
+        </motion.div>
+    );
+}
+
 export default function Skills() {
     const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.1 });
+    const [categories, setCategories] = useState(skillCategories);
+    const [activeId, setActiveId] = useState<string | null>(null);
+    const [activeSkill, setActiveSkill] = useState<{ name: string; icon: IconType; color: string } | null>(null);
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
+    const handleDragStart = (event: DragStartEvent) => {
+        const id = event.active.id as string;
+        setActiveId(id);
+
+        // Find the skill being dragged
+        const [catIdx, skillIdx] = id.split('-').map(Number);
+        if (categories[catIdx]?.skills[skillIdx]) {
+            setActiveSkill(categories[catIdx].skills[skillIdx]);
+        }
+    };
+
+    const handleDragEnd = (event: DragEndEvent, categoryIndex: number) => {
+        const { active, over } = event;
+
+        if (!over || active.id === over.id) {
+            setActiveId(null);
+            setActiveSkill(null);
+            return;
+        }
+
+        const activeIndex = categories[categoryIndex].skills.findIndex(
+            (_, idx) => `${categoryIndex}-${idx}` === active.id
+        );
+        const overIndex = categories[categoryIndex].skills.findIndex(
+            (_, idx) => `${categoryIndex}-${idx}` === over.id
+        );
+
+        if (activeIndex !== -1 && overIndex !== -1) {
+            const newCategories = [...categories];
+            const [movedSkill] = newCategories[categoryIndex].skills.splice(activeIndex, 1);
+            newCategories[categoryIndex].skills.splice(overIndex, 0, movedSkill);
+            setCategories(newCategories);
+        }
+
+        setActiveId(null);
+        setActiveSkill(null);
+    };
 
     return (
         <section id="skills" className="py-24 px-6 relative overflow-hidden">
@@ -75,7 +168,7 @@ export default function Skills() {
                 </motion.div>
 
                 <div className="grid md:grid-cols-2 gap-6">
-                    {skillCategories.map((category, catIndex) => (
+                    {categories.map((category, catIndex) => (
                         <motion.div
                             key={catIndex}
                             initial={{ opacity: 0, y: 30 }}
@@ -84,21 +177,56 @@ export default function Skills() {
                             className="glass-card p-6"
                         >
                             <h3 className="text-xl font-bold text-white mb-6 gradient-text">{category.title}</h3>
-                            <div className="grid grid-cols-3 gap-4">
-                                {category.skills.map((skill, skillIndex) => (
-                                    <motion.div
-                                        key={skillIndex}
-                                        initial={{ opacity: 0, scale: 0.8 }}
-                                        animate={inView ? { opacity: 1, scale: 1 } : {}}
-                                        transition={{ duration: 0.4, delay: catIndex * 0.15 + skillIndex * 0.05 }}
-                                        whileHover={{ scale: 1.1, y: -5 }}
-                                        className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-white/5 transition-all cursor-pointer"
+                            {isMounted ? (
+                                <DndContext
+                                    collisionDetection={closestCenter}
+                                    onDragStart={handleDragStart}
+                                    onDragEnd={(event) => handleDragEnd(event, catIndex)}
+                                >
+                                    <SortableContext
+                                        items={category.skills.map((_, idx) => `${catIndex}-${idx}`)}
+                                        strategy={rectSortingStrategy}
                                     >
-                                        <skill.icon className={`text-3xl ${skill.color}`} />
-                                        <span className="text-xs text-gray-300 font-medium text-center leading-tight">{skill.name}</span>
-                                    </motion.div>
-                                ))}
-                            </div>
+                                        <div className="grid grid-cols-3 gap-4">
+                                            {category.skills.map((skill, skillIndex) => (
+                                                <SortableSkillItem
+                                                    key={`${catIndex}-${skillIndex}`}
+                                                    id={`${catIndex}-${skillIndex}`}
+                                                    skill={skill}
+                                                    inView={inView}
+                                                    delay={catIndex * 0.15 + skillIndex * 0.05}
+                                                />
+                                            ))}
+                                        </div>
+                                    </SortableContext>
+                                    <DragOverlay>
+                                        {activeSkill && activeId?.startsWith(`${catIndex}-`) ? (
+                                            <div className="flex flex-col items-center gap-2 p-3 rounded-xl bg-white/10 backdrop-blur-sm shadow-2xl border border-white/20">
+                                                <activeSkill.icon className={`text-3xl ${activeSkill.color}`} />
+                                                <span className="text-xs text-gray-300 font-medium text-center leading-tight">
+                                                    {activeSkill.name}
+                                                </span>
+                                            </div>
+                                        ) : null}
+                                    </DragOverlay>
+                                </DndContext>
+                            ) : (
+                                <div className="grid grid-cols-3 gap-4">
+                                    {category.skills.map((skill, skillIndex) => (
+                                        <motion.div
+                                            key={`${catIndex}-${skillIndex}`}
+                                            initial={{ opacity: 0, scale: 0.8 }}
+                                            animate={inView ? { opacity: 1, scale: 1 } : {}}
+                                            transition={{ duration: 0.4, delay: catIndex * 0.15 + skillIndex * 0.05 }}
+                                            whileHover={{ scale: 1.1, y: -5 }}
+                                            className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-white/5 transition-all"
+                                        >
+                                            <skill.icon className={`text-3xl ${skill.color}`} />
+                                            <span className="text-xs text-gray-300 font-medium text-center leading-tight">{skill.name}</span>
+                                        </motion.div>
+                                    ))}
+                                </div>
+                            )}
                         </motion.div>
                     ))}
                 </div>

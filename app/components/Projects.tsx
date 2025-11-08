@@ -1,9 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { FaExternalLinkAlt, FaTimes } from 'react-icons/fa';
+import Tilt from 'react-parallax-tilt';
+import { DndContext, closestCenter, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { SortableContext, useSortable, rectSortingStrategy } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 const projects = [
     {
@@ -104,9 +108,129 @@ const projects = [
     },
 ];
 
+interface SortableProjectCardProps {
+    project: typeof projects[0];
+    index: number;
+    inView: boolean;
+    onSelect: () => void;
+}
+
+function SortableProjectCard({ project, index, inView, onSelect }: SortableProjectCardProps) {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging,
+    } = useSortable({ id: `project-${index}` });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.5 : 1,
+    };
+
+    return (
+        <motion.div
+            ref={setNodeRef}
+            style={style}
+            initial={{ opacity: 0, y: 30 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6, delay: index * 0.08 }}
+        >
+            <Tilt
+                tiltMaxAngleX={10}
+                tiltMaxAngleY={10}
+                perspective={1000}
+                scale={1.02}
+                transitionSpeed={2000}
+                gyroscope={true}
+            >
+                <div
+                    {...attributes}
+                    {...listeners}
+                    className={`glass-card p-6 group cursor-grab active:cursor-grabbing h-full ${isDragging ? 'shadow-2xl ring-2 ring-indigo-500/50' : ''
+                        }`}
+                    onClick={onSelect}
+                >
+                    <div className={`h-1 w-16 bg-gradient-to-r ${project.color} rounded-full mb-4`} />
+                    <h3 className="text-xl font-bold text-white mb-3 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-indigo-400 group-hover:to-purple-400 transition-all">
+                        {project.title}
+                    </h3>
+                    <p className="text-gray-400 mb-4 text-sm leading-relaxed line-clamp-2">{project.description}</p>
+                    <div className="flex flex-wrap gap-2 mb-4">
+                        {project.tech.slice(0, 3).map((tech, i) => (
+                            <span key={i} className="px-3 py-1 bg-white/5 text-indigo-400 rounded-full text-xs font-medium">
+                                {tech}
+                            </span>
+                        ))}
+                        {project.tech.length > 3 && (
+                            <span className="px-3 py-1 bg-white/5 text-purple-400 rounded-full text-xs font-medium">
+                                +{project.tech.length - 3}
+                            </span>
+                        )}
+                    </div>
+                    <a
+                        href={project.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="inline-flex items-center gap-2 text-indigo-400 hover:text-indigo-300 transition-colors text-sm font-semibold"
+                    >
+                        Visit Site <FaExternalLinkAlt className="text-xs" />
+                    </a>
+                </div>
+            </Tilt>
+        </motion.div>
+    );
+}
+
 export default function Projects() {
     const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.1 });
     const [selectedProject, setSelectedProject] = useState<typeof projects[0] | null>(null);
+    const [projectList, setProjectList] = useState(projects);
+    const [activeId, setActiveId] = useState<string | null>(null);
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 8,
+            },
+        })
+    );
+
+    const handleDragStart = (event: DragStartEvent) => {
+        setActiveId(event.active.id as string);
+    };
+
+    const handleDragEnd = (event: DragEndEvent) => {
+        const { active, over } = event;
+
+        if (!over || active.id === over.id) {
+            setActiveId(null);
+            return;
+        }
+
+        const activeIndex = projectList.findIndex((_, idx) => `project-${idx}` === active.id);
+        const overIndex = projectList.findIndex((_, idx) => `project-${idx}` === over.id);
+
+        if (activeIndex !== -1 && overIndex !== -1) {
+            const newProjects = [...projectList];
+            const [movedProject] = newProjects.splice(activeIndex, 1);
+            newProjects.splice(overIndex, 0, movedProject);
+            setProjectList(newProjects);
+        }
+
+        setActiveId(null);
+    };
+
+    const activeProject = activeId ? projectList.find((_, idx) => `project-${idx}` === activeId) : null;
 
     return (
         <section id="projects" className="py-12 px-6 relative overflow-hidden">
@@ -122,45 +246,92 @@ export default function Projects() {
                     <p className="text-gray-400 text-lg">Real-world applications I've built</p>
                 </motion.div>
 
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {projects.map((project, index) => (
-                        <motion.div
-                            key={index}
-                            initial={{ opacity: 0, y: 30 }}
-                            animate={inView ? { opacity: 1, y: 0 } : {}}
-                            transition={{ duration: 0.6, delay: index * 0.08 }}
-                            className="glass-card p-6 group cursor-pointer"
-                            onClick={() => setSelectedProject(project)}
+                {isMounted ? (
+                    <DndContext
+                        sensors={sensors}
+                        collisionDetection={closestCenter}
+                        onDragStart={handleDragStart}
+                        onDragEnd={handleDragEnd}
+                    >
+                        <SortableContext
+                            items={projectList.map((_, idx) => `project-${idx}`)}
+                            strategy={rectSortingStrategy}
                         >
-                            <div className={`h-1 w-16 bg-gradient-to-r ${project.color} rounded-full mb-4`} />
-                            <h3 className="text-xl font-bold text-white mb-3 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-indigo-400 group-hover:to-purple-400 transition-all">
-                                {project.title}
-                            </h3>
-                            <p className="text-gray-400 mb-4 text-sm leading-relaxed line-clamp-2">{project.description}</p>
-                            <div className="flex flex-wrap gap-2 mb-4">
-                                {project.tech.slice(0, 3).map((tech, i) => (
-                                    <span key={i} className="px-3 py-1 bg-white/5 text-indigo-400 rounded-full text-xs font-medium">
-                                        {tech}
-                                    </span>
+                            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {projectList.map((project, index) => (
+                                    <SortableProjectCard
+                                        key={`project-${index}`}
+                                        project={project}
+                                        index={index}
+                                        inView={inView}
+                                        onSelect={() => setSelectedProject(project)}
+                                    />
                                 ))}
-                                {project.tech.length > 3 && (
-                                    <span className="px-3 py-1 bg-white/5 text-purple-400 rounded-full text-xs font-medium">
-                                        +{project.tech.length - 3}
-                                    </span>
-                                )}
                             </div>
-                            <a
-                                href={project.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                onClick={(e) => e.stopPropagation()}
-                                className="inline-flex items-center gap-2 text-indigo-400 hover:text-indigo-300 transition-colors text-sm font-semibold"
+                        </SortableContext>
+                        <DragOverlay>
+                            {activeProject && (
+                                <div className="glass-card p-6 shadow-2xl ring-2 ring-indigo-500 rotate-3 scale-105">
+                                    <div className={`h-1 w-16 bg-gradient-to-r ${activeProject.color} rounded-full mb-4`} />
+                                    <h3 className="text-xl font-bold text-white mb-3">{activeProject.title}</h3>
+                                    <p className="text-gray-400 mb-4 text-sm leading-relaxed line-clamp-2">{activeProject.description}</p>
+                                </div>
+                            )}
+                        </DragOverlay>
+                    </DndContext>
+                ) : (
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {projectList.map((project, index) => (
+                            <motion.div
+                                key={index}
+                                initial={{ opacity: 0, y: 30 }}
+                                animate={inView ? { opacity: 1, y: 0 } : {}}
+                                transition={{ duration: 0.6, delay: index * 0.08 }}
                             >
-                                Visit Site <FaExternalLinkAlt className="text-xs" />
-                            </a>
-                        </motion.div>
-                    ))}
-                </div>
+                                <Tilt
+                                    tiltMaxAngleX={10}
+                                    tiltMaxAngleY={10}
+                                    perspective={1000}
+                                    scale={1.02}
+                                    transitionSpeed={2000}
+                                    gyroscope={true}
+                                >
+                                    <div
+                                        className="glass-card p-6 group cursor-pointer h-full"
+                                        onClick={() => setSelectedProject(project)}
+                                    >
+                                        <div className={`h-1 w-16 bg-gradient-to-r ${project.color} rounded-full mb-4`} />
+                                        <h3 className="text-xl font-bold text-white mb-3 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-indigo-400 group-hover:to-purple-400 transition-all">
+                                            {project.title}
+                                        </h3>
+                                        <p className="text-gray-400 mb-4 text-sm leading-relaxed line-clamp-2">{project.description}</p>
+                                        <div className="flex flex-wrap gap-2 mb-4">
+                                            {project.tech.slice(0, 3).map((tech, i) => (
+                                                <span key={i} className="px-3 py-1 bg-white/5 text-indigo-400 rounded-full text-xs font-medium">
+                                                    {tech}
+                                                </span>
+                                            ))}
+                                            {project.tech.length > 3 && (
+                                                <span className="px-3 py-1 bg-white/5 text-purple-400 rounded-full text-xs font-medium">
+                                                    +{project.tech.length - 3}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <a
+                                            href={project.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            onClick={(e) => e.stopPropagation()}
+                                            className="inline-flex items-center gap-2 text-indigo-400 hover:text-indigo-300 transition-colors text-sm font-semibold"
+                                        >
+                                            Visit Site <FaExternalLinkAlt className="text-xs" />
+                                        </a>
+                                    </div>
+                                </Tilt>
+                            </motion.div>
+                        ))}
+                    </div>
+                )}
             </div>
 
             <AnimatePresence>
