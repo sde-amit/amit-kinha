@@ -6,6 +6,8 @@ import Experience from '@/app/components/Experience';
 import Skills from '@/app/components/Skills';
 import Projects from '@/app/components/Projects';
 import Education from '@/app/components/Education';
+import Achievements from '@/app/components/Achievements';
+import Testimonials from '@/app/components/Testimonials';
 import Contact from '@/app/components/Contact';
 
 export default function Home() {
@@ -19,6 +21,8 @@ export default function Home() {
         <Skills />
         <Projects />
         <Education />
+        <Achievements />
+        <Testimonials />
         <Contact />
       </div>
     </div>
